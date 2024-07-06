@@ -1,11 +1,10 @@
 IMAGE = rustydo
 
-run: 
-	@docker run --rm $(IMAGE)
+run: build
+	@docker run -it -it --rm $(IMAGE)
 
-build:
-	@docker rmi -f $(IMAGE) .
+build: Dockerfile src/bin/main.rs Cargo.toml
+	@docker rmi -f $(IMAGE) || true
 	@docker build -t $(IMAGE) .
 
 .PHONY: build run
-
