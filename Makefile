@@ -24,4 +24,4 @@ run: $(TIMESTAMP)
 # Only build the Docker image, without executing the whole app
 build: $(TIMESTAMP)
 
-.PHONY: all run
+.PHONY: all run build
