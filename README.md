@@ -2,7 +2,7 @@
 
 This is a terminal based TODO list made with Rust, using the [ratatui](https://ratatui.rs/) crate.
 
-## Building process
+## Developing process
 
 Just making the UI to render a basic view of a list of tasks.
 
@@ -10,7 +10,7 @@ Lately, I'm planing to make a database saving all the information. I'm thinking 
 
 ## Prerequisites
 
-You just need [Docker](https://www.docker.com/) installed on your local machine to run this aplication.
+You just need [Docker](https://www.docker.com/) installed on your local machine to run this application.
 
 ## Try it
 
@@ -20,4 +20,4 @@ make
 ```
 Yes, as simple as that, and Docker will do everything for you.
 
-Check out the `Makefile` and the `Dockerfile` to see what is going on in the building process of the application.
+Check out the `Makefile` and the `Dockerfile` to see what is going on during the building process of the application.
