@@ -4,77 +4,55 @@
 //     - tasks
 //     - state
 //     - ...
-// 
-// Improve project file structure:
-//     - main.rs
-//     - event.rs
-//     - ui.rs
 
-use std::io::{stdout, Result};
+use std::io::{self, stdout, Result};
+use std::panic;
 
 use ratatui::{
     backend::CrosstermBackend,
-    crossterm::{
-        event::{self, KeyCode, KeyEventKind},
-        terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-        ExecutableCommand,
-    },
+    crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
     prelude::Backend,
-    style::Stylize,
-    widgets::Paragraph,
     Terminal,
 };
 
-fn draw_ui(terminal: &mut Terminal<impl Backend>) -> Result<()> {
-    terminal.draw(|f| {
-        let area = f.size();
-        f.render_widget(
-            Paragraph::new("Hello Ratatui! (press 'q' to quit)")
-                .red()
-                .on_dark_gray(),
-            area,
-        );
-    })?;
+use rustydo::app::App;
+use rustydo::handle;
+use rustydo::ui;
 
-    Ok(())
-}
+fn init() -> Result<Terminal<impl Backend>> {
+    ratatui::crossterm::execute!(io::stderr(), EnterAlternateScreen)?;
+    terminal::enable_raw_mode()?;
 
-fn init_app() -> Result<Terminal<impl Backend>> {
-    stdout().execute(EnterAlternateScreen)?;
-    enable_raw_mode()?;
+    // Define a custom panic hook to reset the terminal properties
+    let panic_hook = panic::take_hook();
+    panic::set_hook(Box::new(move |panic| {
+        quit().expect("error quiting the app");
+        panic_hook(panic);
+    }));
+
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
     terminal.clear()?;
 
     Ok(terminal)
 }
 
-fn quit_app() -> Result<()> {
-    stdout().execute(LeaveAlternateScreen)?;
-    disable_raw_mode()?;
+fn quit() -> Result<()> {
+    ratatui::crossterm::execute!(io::stderr(), LeaveAlternateScreen)?;
+    terminal::disable_raw_mode()?;
 
     Ok(())
 }
 
 fn main() -> Result<()> {
-    let mut terminal = init_app()?;
+    let mut terminal = init()?;
+    let mut app = App::new();
 
-    loop {
-        draw_ui(&mut terminal)?;
-
-        // 16 millis = 60 fps
-        if event::poll(std::time::Duration::from_millis(16))? {
-            if let event::Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Press {
-                    match key.code {
-                        KeyCode::Char('q') => break,
-                        _ => {}
-                    }
-                }
-            }
-        }
+    while app.is_running() {
+        terminal.draw(|frame| ui::render(frame, &mut app))?;
+        handle::event(&mut app)?;
     }
 
-    quit_app()?;
+    quit()?;
 
     Ok(())
 }
