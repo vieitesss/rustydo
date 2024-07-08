@@ -39,7 +39,7 @@ fn key_press(key: KeyCode, app: &mut App) {
         KeyCode::Insert => {}
         KeyCode::F(_) => {}
         KeyCode::Char(char) => match char {
-            'q' => app.status = AppStatus::Quitting,
+            'q' => app.set_status(AppStatus::Quitting),
             _ => {}
         },
         KeyCode::Null => {}

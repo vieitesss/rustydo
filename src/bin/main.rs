@@ -1,10 +1,3 @@
-// ----- TODO -----
-//
-// Create "App" struct with something like:
-//     - tasks
-//     - state
-//     - ...
-
 use std::io::{self, stdout, Result};
 use std::panic;
 
@@ -16,7 +9,7 @@ use ratatui::{
 };
 
 use rustydo::app::App;
-use rustydo::handle;
+use rustydo::handler;
 use rustydo::ui;
 
 fn init() -> Result<Terminal<impl Backend>> {
@@ -49,7 +42,7 @@ fn main() -> Result<()> {
 
     while app.is_running() {
         terminal.draw(|frame| ui::render(frame, &mut app))?;
-        handle::event(&mut app)?;
+        handler::event(&mut app)?;
     }
 
     quit()?;
