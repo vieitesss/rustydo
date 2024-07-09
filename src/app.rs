@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use crate::model::task::Task;
+use crate::model::{area::Area, task::Task};
 
 #[derive(PartialEq, Clone)]
 pub enum AppStatus {
@@ -18,23 +18,24 @@ pub struct App {
     // TODO: improve
     status: AppStatus,
     window: AppWindow,
-    tasks: Vec<Task>,
+    areas: Vec<Area>,
+    current_area: Option<String>,
 }
 
 impl Default for App {
     fn default() -> Self {
-        let mut tasks: Vec<Task> = vec![
-            Task::new("hacer la maleta"),
-            Task::new("recoger el ordenador"),
-            Task::new("lavarme los dientes"),
-            Task::new("mirar la nómina"),
-        ];
-        tasks[1].set_done(true);
+        let mut area = Area::new("Universidad");
+        area.push_task(Task::new("hacer la maleta", area.get_id()));
+        area.push_task(Task::new("recoger el ordenador", area.get_id()));
+        area.push_task(Task::new("lavarme los dientes", area.get_id()));
+        area.push_task(Task::new("mirar la nómina", area.get_id()));
+        area.get_tasks()[1].set_done(true);
 
         App {
             status: AppStatus::Running,
             window: AppWindow::Main,
-            tasks,
+            areas: vec![area],
+            current_area: Some("Universidad".to_string()),
         }
     }
 }
@@ -64,7 +65,20 @@ impl App {
         self.status = status;
     }
 
-    pub fn get_tasks(&self) -> &Vec<Task> {
-        &self.tasks
+    pub fn get_current_area(&self) -> Option<Area> {
+        match &self.current_area {
+            Some(area) => self.get_area_by_title(&area),
+            None => None,
+        }
+    }
+
+    fn get_area_by_title(&self, title: &str) -> Option<Area> {
+        for area in &self.areas {
+            if area.get_title() == title {
+                return Some(area.clone());
+            }
+        }
+
+        None
     }
 }

@@ -3,20 +3,11 @@
 use crate::app::App;
 
 use crate::app::AppWindow;
-use ratatui::layout::Rect;
-use ratatui::style::Color;
-use ratatui::style::Style;
-use ratatui::text::Line;
-use ratatui::widgets::Block;
-use ratatui::widgets::Borders;
-use ratatui::widgets::List;
-use ratatui::widgets::ListItem;
-use ratatui::widgets::Padding;
-use ratatui::widgets::Wrap;
 use ratatui::{
-    layout::{Constraint, Direction, Layout},
-    style::Stylize,
-    widgets::Paragraph,
+    layout::{Constraint, Direction, Layout, Rect},
+    style::{Color, Style, Stylize},
+    text::Line,
+    widgets::{Block, Borders, List, ListItem, Padding, Paragraph, Wrap},
     Frame,
 };
 
@@ -62,13 +53,11 @@ fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
         .block(title_block);
 
     let mut tasks_items = Vec::<ListItem>::new();
-    for task in app.get_tasks() {
-        let check = if task.is_done() { "󰱒" } else { "󰄱" };
-        tasks_items.push(ListItem::new(format!(
-            "{} {}",
-            check,
-            task.get_title()
-        )));
+    if let Some(mut area) = app.get_current_area() {
+        for task in area.get_tasks() {
+            let check = if task.is_done() { "󰱒" } else { "󰄱" };
+            tasks_items.push(ListItem::new(format!("{} {}", check, task.get_title())));
+        }
     }
 
     let tasks_block = Block::new().borders(Borders::NONE);
