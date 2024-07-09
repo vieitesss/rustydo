@@ -9,7 +9,6 @@ WORKDIR /app
 
 # Copy the dependency files into the image
 COPY Cargo.toml Cargo.toml
-COPY Cargo.lock Cargo.lock
 
 # Download the dependencies without compiling the application
 RUN cargo fetch
