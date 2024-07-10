@@ -1,8 +1,7 @@
 #![allow(unused_imports)]
 
-use crate::app::App;
+use crate::app::{App, AppWindow};
 
-use crate::app::AppWindow;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
@@ -18,19 +17,34 @@ pub fn render(frame: &mut Frame, app: &mut App) {
 }
 
 fn render_main(frame: &mut Frame, app: &mut App) {
-    let chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints(vec![Constraint::Percentage(30), Constraint::Percentage(70)])
+    let main_help = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(vec![Constraint::Fill(0), Constraint::Length(1)])
         .split(frame.size());
 
-    let areas_block = Block::default().title("Areas").borders(Borders::ALL);
+    let areas_tasks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(vec![Constraint::Percentage(30), Constraint::Percentage(70)])
+        .split(main_help[0]);
 
+    let areas_block = Block::default().title("Areas").borders(Borders::ALL);
     let tasks_block = Block::default().title("Tasks").borders(Borders::ALL);
 
-    frame.render_widget(areas_block, chunks[0]);
-    frame.render_widget(tasks_block, chunks[1]);
+    frame.render_widget(areas_block, areas_tasks[0]);
+    frame.render_widget(tasks_block, areas_tasks[1]);
 
-    render_tasks(frame, chunks[1], app);
+    render_help(frame, main_help[1], app);
+    render_tasks(frame, areas_tasks[1], app);
+}
+
+fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
+    let help_text = match app.get_window() {
+        AppWindow::Main => {
+            Paragraph::new("help [?]").block(Block::default().borders(Borders::NONE))
+        }
+    };
+
+    frame.render_widget(help_text, rect);
 }
 
 fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
