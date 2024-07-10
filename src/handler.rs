@@ -23,7 +23,11 @@ pub fn event(app: &mut App) -> Result<()> {
 
 fn key_press(key: KeyCode, app: &mut App) {
     match key {
-        KeyCode::Backspace => {}
+        KeyCode::Backspace => {
+            if app.get_pane() == WindowPane::Input {
+                app.remove_char(false);
+            }
+        }
         KeyCode::Enter => {}
         KeyCode::Left => {}
         KeyCode::Right => {}
@@ -35,7 +39,11 @@ fn key_press(key: KeyCode, app: &mut App) {
         KeyCode::PageDown => {}
         KeyCode::Tab => app.focus_next(),
         KeyCode::BackTab => {}
-        KeyCode::Delete => {}
+        KeyCode::Delete => {
+            if app.get_pane() == WindowPane::Input {
+                app.remove_char(true);
+            }
+        }
         KeyCode::Insert => {}
         KeyCode::F(_) => {}
         KeyCode::Char(char) => {
@@ -49,7 +57,7 @@ fn key_press(key: KeyCode, app: &mut App) {
                     _ => {}
                 }
             } else {
-                // TODO: insert new char in input box
+                app.insert_char(char);
             }
         }
         KeyCode::Null => {}

@@ -28,6 +28,10 @@ pub struct App {
     prev_pane: Option<WindowPane>,
     areas: Vec<Area>,
     current_area: Option<String>,
+    input_text: String,
+    input_text_bounds: (u16, u16),
+    input_text_pos: u16,
+    // cursor_offset: u16,
 }
 
 impl Default for App {
@@ -46,6 +50,10 @@ impl Default for App {
             prev_pane: None,
             areas: vec![area],
             current_area: Some("Universidad".to_string()),
+            input_text: String::new(),
+            input_text_bounds: (0, 0),
+            input_text_pos: 0,
+            // cursor_offset: 0,
         }
     }
 }
@@ -91,6 +99,34 @@ impl App {
         self.status = status;
     }
 
+    pub fn get_input_text(&self) -> String {
+        self.input_text.clone()
+    }
+
+    pub fn get_input_text_pos(&self) -> u16 {
+        self.input_text_pos
+    }
+
+    pub fn increase_input_text_pos(&mut self) {
+        self.input_text_pos += 1;
+    }
+
+    pub fn decrease_input_text_pos(&mut self) {
+        self.input_text_pos -= 1;
+    }
+
+    pub fn set_input_text_bounds(&mut self, left: u16, right: u16) {
+        self.input_text_bounds = (left, right);
+    }
+
+    pub fn get_input_text_bounds(&mut self) -> (u16, u16) {
+        self.input_text_bounds
+    }
+
+    pub fn get_input_text_max_len(&mut self) -> u16 {
+        self.input_text_bounds.1 - self.input_text_bounds.0
+    }
+
     pub fn get_current_area(&self) -> Option<Area> {
         match &self.current_area {
             Some(area) => self.get_area_by_title(&area),
@@ -116,6 +152,28 @@ impl App {
         }
     }
 
-    pub fn new_item(&mut self) {
+    pub fn insert_char(&mut self, c: char) {
+        self.input_text += &c.to_string();
+        self.increase_input_text_pos();
+    }
+
+    pub fn remove_char(&mut self, _forward: bool) {
+        let input_text_len = self.input_text.len();
+
+        // First decrease the position
+        if self.get_input_text_pos() > 0 {
+            self.decrease_input_text_pos();
+        }
+
+        // Then remove the char
+        let chars = self.input_text.chars();
+        let lhs: String = chars.clone().take(self.input_text_pos as usize).collect();
+        let rhs: String = chars
+            .clone()
+            .skip(self.input_text_pos as usize + 1)
+            .take(input_text_len - self.input_text_pos as usize)
+            .collect();
+
+        self.input_text = String::from(format!("{}{}", lhs, rhs));
     }
 }

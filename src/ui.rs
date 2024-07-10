@@ -1,9 +1,11 @@
+use std::cmp::min;
+
 use crate::app::{App, AppWindow, WindowPane};
 
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
-    widgets::{Block, Borders, List, ListItem, Padding, Paragraph, Wrap},
+    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Widget, Wrap},
     Frame,
 };
 
@@ -56,7 +58,12 @@ fn render_main(frame: &mut Frame, app: &mut App) {
 fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
     let mut help_text = String::new();
     if app.get_pane() == WindowPane::Input {
-        help_text += "exit [esc]  accept [enter]";
+        help_text += format!(
+            "exit [esc]  accept [enter]  max len: {}  input pos: {}",
+            app.get_input_text_max_len(),
+            app.get_input_text_pos()
+        )
+        .as_str();
     } else {
         help_text += "help [?]  exit [q]  focus next [tab]";
     }
@@ -109,7 +116,7 @@ fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
     frame.render_widget(tasks, tasks_chunks[1]);
 }
 
-fn render_input(frame: &mut Frame, _app: &mut App) {
+fn render_input(frame: &mut Frame, app: &mut App) {
     let frame_height = frame.size().height;
     let [_, input_vert, _] = Layout::default()
         .direction(Direction::Vertical)
@@ -123,16 +130,43 @@ fn render_input(frame: &mut Frame, _app: &mut App) {
     let [_, input_area, _] = Layout::default()
         .direction(Direction::Horizontal)
         .constraints(vec![
-            Constraint::Fill(1),
-            Constraint::Max(30),
-            Constraint::Fill(1),
+            Constraint::Min(1),
+            Constraint::Max(40),
+            Constraint::Min(1),
         ])
         .areas(input_vert);
 
+    Clear.render(input_area, frame.buffer_mut());
+
     let input_block = Block::default()
         .title("Input")
-        .borders(Borders::all())
+        .borders(Borders::ALL)
         .border_style(Style::default().fg(Color::Yellow));
 
+    let inner_area = input_block.inner(input_area);
+    app.set_input_text_bounds(inner_area.left() + 1, inner_area.right());
+
     frame.render_widget(input_block, input_area);
+
+    // Set the cursor in the correct position
+    let cursor_pos = min(app.get_input_text_max_len(), app.get_input_text_pos());
+    frame.set_cursor(
+        inner_area.left() + cursor_pos,
+        inner_area.top(),
+    );
+
+    // Render the text inside the input box
+    let mut input_text = app.get_input_text();
+    let input_text_len = input_text.len();
+    let input_text_max_len = app.get_input_text_max_len() as usize;
+    if input_text_len >= input_text_max_len {
+        input_text = input_text
+            .chars()
+            .skip(input_text_len - input_text_max_len)
+            .take(input_text_max_len)
+            .collect();
+    };
+    let text = Paragraph::new(input_text);
+
+    frame.render_widget(text, inner_area);
 }
