@@ -5,6 +5,7 @@ use crate::app::{App, AppWindow, WindowPane};
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
+    text::{Line, Text},
     widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Widget, Wrap},
     Frame,
 };
@@ -48,6 +49,7 @@ fn render_main(frame: &mut Frame, app: &mut App) {
     frame.render_widget(tasks_block, areas_tasks[1]);
 
     render_help(frame, main_help[1], app);
+    render_areas(frame, areas_tasks[0], app);
     render_tasks(frame, areas_tasks[1], app);
 
     if current_pane == WindowPane::Input {
@@ -58,12 +60,7 @@ fn render_main(frame: &mut Frame, app: &mut App) {
 fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
     let mut help_text = String::new();
     if app.get_pane() == WindowPane::Input {
-        help_text += format!(
-            "exit [esc]  accept [enter]  max len: {}  input pos: {}",
-            app.get_input_text_max_len(),
-            app.get_input_text_pos()
-        )
-        .as_str();
+        help_text += "exit [esc]  accept [enter]";
     } else {
         help_text += "help [?]  exit [q]  focus next [tab]";
     }
@@ -80,6 +77,21 @@ fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
     };
 
     frame.render_widget(help, rect);
+}
+
+fn render_areas(frame: &mut Frame, rect: Rect, app: &mut App) {
+    let inner = Block::bordered().inner(rect);
+
+    let mut areas_items = Vec::<ListItem>::new();
+    for area in app.get_areas() {
+        let title = Text::from(Line::from(area.get_title()).bold());
+        areas_items.push(ListItem::new(title));
+    }
+
+    let areas_block = Block::new().borders(Borders::NONE);
+    let areas = List::new(areas_items).block(areas_block);
+
+    frame.render_widget(areas, inner);
 }
 
 fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
@@ -150,10 +162,7 @@ fn render_input(frame: &mut Frame, app: &mut App) {
 
     // Set the cursor in the correct position
     let cursor_pos = min(app.get_input_text_max_len(), app.get_input_text_pos());
-    frame.set_cursor(
-        inner_area.left() + cursor_pos,
-        inner_area.top(),
-    );
+    frame.set_cursor(inner_area.left() + cursor_pos, inner_area.top());
 
     // Render the text inside the input box
     let mut input_text = app.get_input_text();

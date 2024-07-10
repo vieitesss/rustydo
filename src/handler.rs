@@ -28,7 +28,12 @@ fn key_press(key: KeyCode, app: &mut App) {
                 app.remove_char(false);
             }
         }
-        KeyCode::Enter => {}
+        KeyCode::Enter => {
+            if app.get_pane() == WindowPane::Input {
+                app.handle_input_text();
+                app.set_pane(app.get_prev_pane().unwrap());
+            }
+        }
         KeyCode::Left => {}
         KeyCode::Right => {}
         KeyCode::Up => {}
@@ -64,7 +69,10 @@ fn key_press(key: KeyCode, app: &mut App) {
         KeyCode::Esc => {
             if app.get_pane() == WindowPane::Input {
                 match app.get_window() {
-                    AppWindow::Main => app.set_pane(app.get_prev_pane().unwrap()),
+                    AppWindow::Main => {
+                        app.clear_input_text();
+                        app.set_pane(app.get_prev_pane().unwrap());
+                    },
                 }
             }
         }

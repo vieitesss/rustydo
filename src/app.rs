@@ -119,12 +119,34 @@ impl App {
         self.input_text_bounds = (left, right);
     }
 
+    pub fn handle_input_text(&mut self) {
+        match &self.prev_pane {
+            Some(pane) => {
+                match pane {
+                    WindowPane::Areas => self.new_area(),
+                    WindowPane::Tasks => todo!("New task"),
+                    WindowPane::Input => panic!("Input pane should not be a previous pane"),
+                }
+            },
+            None => panic!("Should be a previous pane"),
+        }
+    }
+
+    pub fn clear_input_text(&mut self) {
+        self.input_text = String::new();
+        self.input_text_pos = 0;
+    }
+
     pub fn get_input_text_bounds(&mut self) -> (u16, u16) {
         self.input_text_bounds
     }
 
     pub fn get_input_text_max_len(&mut self) -> u16 {
         self.input_text_bounds.1 - self.input_text_bounds.0
+    }
+
+    pub fn get_areas(&self) -> &[Area]{
+        &self.areas
     }
 
     pub fn get_current_area(&self) -> Option<Area> {
@@ -175,5 +197,12 @@ impl App {
             .collect();
 
         self.input_text = String::from(format!("{}{}", lhs, rhs));
+    }
+
+    pub fn new_area(&mut self) {
+        let area = Area::new(self.input_text.trim());
+        self.areas.push(area);
+
+        self.clear_input_text();
     }
 }
