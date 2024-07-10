@@ -18,13 +18,14 @@ pub enum AppWindow {
 pub enum WindowPane {
     Areas,
     Tasks,
+    Input,
 }
 
 pub struct App {
-    // TODO: improve
     status: AppStatus,
     window: AppWindow,
     pane: WindowPane,
+    prev_pane: Option<WindowPane>,
     areas: Vec<Area>,
     current_area: Option<String>,
 }
@@ -42,6 +43,7 @@ impl Default for App {
             status: AppStatus::Running,
             window: AppWindow::Main,
             pane: WindowPane::Tasks,
+            prev_pane: None,
             areas: vec![area],
             current_area: Some("Universidad".to_string()),
         }
@@ -73,6 +75,14 @@ impl App {
         self.pane = pane;
     }
 
+    pub fn get_prev_pane(&self) -> Option<WindowPane> {
+        self.prev_pane.clone()
+    }
+
+    pub fn save_current_pane(&mut self) {
+        self.prev_pane = Some(self.get_pane());
+    }
+
     pub fn get_status(&self) -> AppStatus {
         self.status.clone()
     }
@@ -99,12 +109,13 @@ impl App {
     }
 
     pub fn focus_next(&mut self) {
-        match self.get_window() {
-            AppWindow::Main => match self.get_pane() {
-                WindowPane::Areas => self.set_pane(WindowPane::Tasks),
-                WindowPane::Tasks => self.set_pane(WindowPane::Areas),
-                _ => {}
-            },
+        match self.get_pane() {
+            WindowPane::Areas => self.set_pane(WindowPane::Tasks),
+            WindowPane::Tasks => self.set_pane(WindowPane::Areas),
+            _ => {}
         }
+    }
+
+    pub fn new_item(&mut self) {
     }
 }

@@ -24,14 +24,22 @@ fn render_main(frame: &mut Frame, app: &mut App) {
         .constraints(vec![Constraint::Percentage(30), Constraint::Percentage(70)])
         .split(main_help[0]);
 
-
     let mut areas_block = Block::default().title("Areas").borders(Borders::ALL);
     let mut tasks_block = Block::default().title("Tasks").borders(Borders::ALL);
 
-    if app.get_pane() == WindowPane::Areas {
-        areas_block = areas_block.clone().border_style(Style::default().fg(Color::Yellow));
-    } else {
-        tasks_block = tasks_block.clone().border_style(Style::default().fg(Color::Yellow));
+    let current_pane = app.get_pane();
+    match current_pane {
+        WindowPane::Areas => {
+            areas_block = areas_block
+                .clone()
+                .border_style(Style::default().fg(Color::Yellow));
+        }
+        WindowPane::Tasks => {
+            tasks_block = tasks_block
+                .clone()
+                .border_style(Style::default().fg(Color::Yellow));
+        }
+        WindowPane::Input => {}
     }
 
     frame.render_widget(areas_block, areas_tasks[0]);
@@ -39,16 +47,32 @@ fn render_main(frame: &mut Frame, app: &mut App) {
 
     render_help(frame, main_help[1], app);
     render_tasks(frame, areas_tasks[1], app);
+
+    if current_pane == WindowPane::Input {
+        render_input(frame, app);
+    }
 }
 
 fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
-    let help_text = match app.get_window() {
+    let mut help_text = String::new();
+    if app.get_pane() == WindowPane::Input {
+        help_text += "exit [esc]  accept [enter]";
+    } else {
+        help_text += "help [?]  exit [q]  focus next [tab]";
+    }
+
+    let help = match app.get_window() {
         AppWindow::Main => {
-            Paragraph::new("help [?]  focus next [tab]").block(Block::default().borders(Borders::NONE))
+            match app.get_pane() {
+                WindowPane::Areas => help_text += "  new area [n]",
+                WindowPane::Tasks => help_text += "  new task [n]",
+                WindowPane::Input => {}
+            }
+            Paragraph::new(help_text).block(Block::default().borders(Borders::NONE))
         }
     };
 
-    frame.render_widget(help_text, rect);
+    frame.render_widget(help, rect);
 }
 
 fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
@@ -83,4 +107,32 @@ fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
 
     frame.render_widget(title, tasks_chunks[0]);
     frame.render_widget(tasks, tasks_chunks[1]);
+}
+
+fn render_input(frame: &mut Frame, _app: &mut App) {
+    let frame_height = frame.size().height;
+    let [_, input_vert, _] = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(vec![
+            Constraint::Length(frame_height / 2 - 3),
+            Constraint::Length(3),
+            Constraint::Length(frame_height / 2 - 3),
+        ])
+        .areas(frame.size());
+
+    let [_, input_area, _] = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(vec![
+            Constraint::Fill(1),
+            Constraint::Max(30),
+            Constraint::Fill(1),
+        ])
+        .areas(input_vert);
+
+    let input_block = Block::default()
+        .title("Input")
+        .borders(Borders::all())
+        .border_style(Style::default().fg(Color::Yellow));
+
+    frame.render_widget(input_block, input_area);
 }

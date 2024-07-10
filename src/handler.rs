@@ -1,4 +1,4 @@
-use crate::app::{App, AppStatus};
+use crate::app::{App, AppStatus, AppWindow, WindowPane};
 use std::io::Result;
 
 use ratatui::crossterm::event::{self, KeyCode, KeyEventKind};
@@ -33,19 +33,33 @@ fn key_press(key: KeyCode, app: &mut App) {
         KeyCode::End => {}
         KeyCode::PageUp => {}
         KeyCode::PageDown => {}
-        KeyCode::Tab => {
-            app.focus_next()
-        }
+        KeyCode::Tab => app.focus_next(),
         KeyCode::BackTab => {}
         KeyCode::Delete => {}
         KeyCode::Insert => {}
         KeyCode::F(_) => {}
-        KeyCode::Char(char) => match char {
-            'q' => app.set_status(AppStatus::Quitting),
-            _ => {}
-        },
+        KeyCode::Char(char) => {
+            if app.get_pane() != WindowPane::Input {
+                match char {
+                    'q' => app.set_status(AppStatus::Quitting),
+                    'n' => {
+                        app.save_current_pane();
+                        app.set_pane(WindowPane::Input);
+                    },
+                    _ => {}
+                }
+            } else {
+                // TODO: insert new char in input box
+            }
+        }
         KeyCode::Null => {}
-        KeyCode::Esc => {}
+        KeyCode::Esc => {
+            if app.get_pane() == WindowPane::Input {
+                match app.get_window() {
+                    AppWindow::Main => app.set_pane(app.get_prev_pane().unwrap()),
+                }
+            }
+        }
         KeyCode::CapsLock => {}
         KeyCode::ScrollLock => {}
         KeyCode::NumLock => {}
