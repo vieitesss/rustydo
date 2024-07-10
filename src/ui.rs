@@ -1,11 +1,8 @@
-#![allow(unused_imports)]
-
-use crate::app::{App, AppWindow};
+use crate::app::{App, AppWindow, WindowPane};
 
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
-    text::Line,
     widgets::{Block, Borders, List, ListItem, Padding, Paragraph, Wrap},
     Frame,
 };
@@ -27,8 +24,15 @@ fn render_main(frame: &mut Frame, app: &mut App) {
         .constraints(vec![Constraint::Percentage(30), Constraint::Percentage(70)])
         .split(main_help[0]);
 
-    let areas_block = Block::default().title("Areas").borders(Borders::ALL);
-    let tasks_block = Block::default().title("Tasks").borders(Borders::ALL);
+
+    let mut areas_block = Block::default().title("Areas").borders(Borders::ALL);
+    let mut tasks_block = Block::default().title("Tasks").borders(Borders::ALL);
+
+    if app.get_pane() == WindowPane::Areas {
+        areas_block = areas_block.clone().border_style(Style::default().fg(Color::Yellow));
+    } else {
+        tasks_block = tasks_block.clone().border_style(Style::default().fg(Color::Yellow));
+    }
 
     frame.render_widget(areas_block, areas_tasks[0]);
     frame.render_widget(tasks_block, areas_tasks[1]);
@@ -40,7 +44,7 @@ fn render_main(frame: &mut Frame, app: &mut App) {
 fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
     let help_text = match app.get_window() {
         AppWindow::Main => {
-            Paragraph::new("help [?]").block(Block::default().borders(Borders::NONE))
+            Paragraph::new("help [?]  focus next [tab]").block(Block::default().borders(Borders::NONE))
         }
     };
 

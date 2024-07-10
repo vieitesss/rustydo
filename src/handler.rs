@@ -33,7 +33,9 @@ fn key_press(key: KeyCode, app: &mut App) {
         KeyCode::End => {}
         KeyCode::PageUp => {}
         KeyCode::PageDown => {}
-        KeyCode::Tab => {}
+        KeyCode::Tab => {
+            app.focus_next()
+        }
         KeyCode::BackTab => {}
         KeyCode::Delete => {}
         KeyCode::Insert => {}

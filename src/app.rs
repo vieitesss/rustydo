@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+#![allow(unreachable_patterns)]
 
 use crate::model::{area::Area, task::Task};
 
@@ -14,10 +14,17 @@ pub enum AppWindow {
     Main,
 }
 
+#[derive(PartialEq, Clone)]
+pub enum WindowPane {
+    Areas,
+    Tasks,
+}
+
 pub struct App {
     // TODO: improve
     status: AppStatus,
     window: AppWindow,
+    pane: WindowPane,
     areas: Vec<Area>,
     current_area: Option<String>,
 }
@@ -34,6 +41,7 @@ impl Default for App {
         App {
             status: AppStatus::Running,
             window: AppWindow::Main,
+            pane: WindowPane::Tasks,
             areas: vec![area],
             current_area: Some("Universidad".to_string()),
         }
@@ -55,6 +63,14 @@ impl App {
 
     pub fn set_window(&mut self, window: AppWindow) {
         self.window = window;
+    }
+
+    pub fn get_pane(&self) -> WindowPane {
+        self.pane.clone()
+    }
+
+    pub fn set_pane(&mut self, pane: WindowPane) {
+        self.pane = pane;
     }
 
     pub fn get_status(&self) -> AppStatus {
@@ -80,5 +96,15 @@ impl App {
         }
 
         None
+    }
+
+    pub fn focus_next(&mut self) {
+        match self.get_window() {
+            AppWindow::Main => match self.get_pane() {
+                WindowPane::Areas => self.set_pane(WindowPane::Tasks),
+                WindowPane::Tasks => self.set_pane(WindowPane::Areas),
+                _ => {}
+            },
+        }
     }
 }
