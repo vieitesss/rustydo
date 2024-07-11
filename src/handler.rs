@@ -25,7 +25,7 @@ fn key_press(key: KeyCode, app: &mut App) {
     match key {
         KeyCode::Backspace => {
             if app.get_pane() == WindowPane::Input {
-                app.remove_char(false);
+                app.remove_char();
             }
         }
         KeyCode::Enter => {
@@ -46,7 +46,7 @@ fn key_press(key: KeyCode, app: &mut App) {
         KeyCode::BackTab => {}
         KeyCode::Delete => {
             if app.get_pane() == WindowPane::Input {
-                app.remove_char(true);
+                app.remove_char();
             }
         }
         KeyCode::Insert => {}

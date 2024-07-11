@@ -156,18 +156,22 @@ fn render_input(frame: &mut Frame, app: &mut App) {
         .border_style(Style::default().fg(Color::Yellow));
 
     let inner_area = input_block.inner(input_area);
-    app.set_input_text_bounds(inner_area.left() + 1, inner_area.right());
+    app.get_input()
+        .set_text_bounds(inner_area.left() + 1, inner_area.right());
 
     frame.render_widget(input_block, input_area);
 
     // Set the cursor in the correct position
-    let cursor_pos = min(app.get_input_text_max_len(), app.get_input_text_pos());
+    let cursor_pos = min(
+        app.get_input().get_text_max_len(),
+        app.get_input().get_text_pos(),
+    );
     frame.set_cursor(inner_area.left() + cursor_pos, inner_area.top());
 
     // Render the text inside the input box
-    let mut input_text = app.get_input_text();
+    let mut input_text = app.get_input().get_text();
     let input_text_len = input_text.len();
-    let input_text_max_len = app.get_input_text_max_len() as usize;
+    let input_text_max_len = app.get_input().get_text_max_len() as usize;
     if input_text_len >= input_text_max_len {
         input_text = input_text
             .chars()
