@@ -113,10 +113,6 @@ impl App {
         }
     }
 
-    pub fn clear_input_text(&mut self) {
-        self.input.clear();
-    }
-
     pub fn get_areas(&self) -> &[Area] {
         &self.areas
     }
@@ -144,14 +140,6 @@ impl App {
             WindowPane::Tasks => self.set_pane(WindowPane::Areas),
             _ => {}
         }
-    }
-
-    pub fn insert_char(&mut self, c: char) {
-        self.input.insert_char(c);
-    }
-
-    pub fn remove_char(&mut self) {
-        self.input.remove_char();
     }
 
     pub fn new_area(&mut self) {

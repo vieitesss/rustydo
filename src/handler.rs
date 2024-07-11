@@ -25,7 +25,7 @@ fn key_press(key: KeyCode, app: &mut App) {
     match key {
         KeyCode::Backspace => {
             if app.get_pane() == WindowPane::Input {
-                app.remove_char();
+                app.get_input().remove_char();
             }
         }
         KeyCode::Enter => {
@@ -44,11 +44,7 @@ fn key_press(key: KeyCode, app: &mut App) {
         KeyCode::PageDown => {}
         KeyCode::Tab => app.focus_next(),
         KeyCode::BackTab => {}
-        KeyCode::Delete => {
-            if app.get_pane() == WindowPane::Input {
-                app.remove_char();
-            }
-        }
+        KeyCode::Delete => {}
         KeyCode::Insert => {}
         KeyCode::F(_) => {}
         KeyCode::Char(char) => {
@@ -62,7 +58,7 @@ fn key_press(key: KeyCode, app: &mut App) {
                     _ => {}
                 }
             } else {
-                app.insert_char(char);
+                app.get_input().insert_char(char);
             }
         }
         KeyCode::Null => {}
@@ -70,7 +66,7 @@ fn key_press(key: KeyCode, app: &mut App) {
             if app.get_pane() == WindowPane::Input {
                 match app.get_window() {
                     AppWindow::Main => {
-                        app.clear_input_text();
+                        app.get_input().clear();
                         app.set_pane(app.get_prev_pane().unwrap());
                     },
                 }
