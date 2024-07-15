@@ -169,7 +169,7 @@ fn render_input(frame: &mut Frame, app: &mut App) {
     frame.set_cursor(inner_area.left() + cursor_pos, inner_area.top());
 
     // Render the text inside the input box
-    let mut input_text = app.get_input().get_text();
+    let mut input_text: String = app.get_input().get_text().to_string();
     let input_text_len = input_text.len();
     let input_text_max_len = app.get_input().get_text_max_len() as usize;
     if input_text_len >= input_text_max_len {

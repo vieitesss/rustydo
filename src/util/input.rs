@@ -19,8 +19,8 @@ impl Input {
         Self::default()
     }
 
-    pub fn get_text(&self) -> String {
-        self.text.clone()
+    pub fn get_text(&self) -> &str {
+        self.text.as_str()
     }
 
     pub fn get_text_pos(&self) -> u16 {

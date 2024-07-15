@@ -32,8 +32,8 @@ impl Task {
         self.title = title;
     }
 
-    pub fn get_title(&self) -> String {
-        self.title.clone()
+    pub fn get_title(&self) -> &str {
+        self.title.as_str()
     }
 
     pub fn get_area(&self) -> Uuid {

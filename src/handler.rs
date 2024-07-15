@@ -54,7 +54,7 @@ fn key_press(key: KeyCode, app: &mut App) {
                     'n' => {
                         app.save_current_pane();
                         app.set_pane(WindowPane::Input);
-                    },
+                    }
                     _ => {}
                 }
             } else {
@@ -68,7 +68,7 @@ fn key_press(key: KeyCode, app: &mut App) {
                     AppWindow::Main => {
                         app.get_input().clear();
                         app.set_pane(app.get_prev_pane().unwrap());
-                    },
+                    }
                 }
             }
         }

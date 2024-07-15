@@ -22,8 +22,8 @@ impl Area {
         self.id
     }
 
-    pub fn get_title(&self) -> String {
-        self.title.clone()
+    pub fn get_title(&self) -> &str {
+        self.title.as_str()
     }
 
     pub fn set_title(&mut self, title: String) {
