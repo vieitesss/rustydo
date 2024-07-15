@@ -116,8 +116,8 @@ fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
     let mut tasks_items = Vec::<ListItem>::new();
     if let Some(area) = app.get_current_area() {
         for task in area.tasks {
-            let check = if task.is_done() { "󰱒" } else { "󰄱" };
-            tasks_items.push(ListItem::new(format!("{} {}", check, task.get_title())));
+            let check = if task.done { "󰱒" } else { "󰄱" };
+            tasks_items.push(ListItem::new(format!("{} {}", check, task.title)));
         }
     }
 
@@ -163,15 +163,15 @@ fn render_input(frame: &mut Frame, app: &mut App) {
 
     // Set the cursor in the correct position
     let cursor_pos = min(
-        app.get_input().get_text_max_len(),
-        app.get_input().get_text_pos(),
+        app.get_input().text_max_len(),
+        app.get_input().text_pos(),
     );
     frame.set_cursor(inner_area.left() + cursor_pos, inner_area.top());
 
     // Render the text inside the input box
-    let mut input_text: String = app.get_input().get_text().to_string();
+    let mut input_text: String = app.get_input().text.to_string();
     let input_text_len = input_text.len();
-    let input_text_max_len = app.get_input().get_text_max_len() as usize;
+    let input_text_max_len = app.get_input().text_max_len() as usize;
     if input_text_len >= input_text_max_len {
         input_text = input_text
             .chars()

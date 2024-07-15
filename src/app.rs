@@ -38,12 +38,12 @@ pub struct App {
 impl Default for App {
     fn default() -> Self {
         let mut area = Area::new("Universidad");
-        area.tasks.push(Task::new("hacer la maleta", area.id()));
+        area.tasks.push(Task::new("hacer la maleta", *area.id()));
         area.tasks
-            .push(Task::new("recoger el ordenador", area.id()));
-        area.tasks.push(Task::new("lavarme los dientes", area.id()));
-        area.tasks.push(Task::new("mirar la nómina", area.id()));
-        area.tasks[1].set_done(true);
+            .push(Task::new("recoger el ordenador", *area.id()));
+        area.tasks.push(Task::new("lavarme los dientes", *area.id()));
+        area.tasks.push(Task::new("mirar la nómina", *area.id()));
+        area.tasks[1].done = true;
 
         App {
             status: AppStatus::Running,
@@ -144,7 +144,7 @@ impl App {
     }
 
     pub fn new_area(&mut self) {
-        let area = Area::new(self.input.get_text().trim());
+        let area = Area::new(self.input.text.trim());
         self.areas.push(area);
 
         self.input.clear();

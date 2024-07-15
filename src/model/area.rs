@@ -18,8 +18,8 @@ impl Area {
         }
     }
 
-    pub fn id(&self) -> Uuid {
-        self.id
+    pub fn id(&self) -> &Uuid {
+        &self.id
     }
 
     //TODO: update, delete tasks
