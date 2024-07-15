@@ -38,11 +38,12 @@ pub struct App {
 impl Default for App {
     fn default() -> Self {
         let mut area = Area::new("Universidad");
-        area.push_task(Task::new("hacer la maleta", area.get_id()));
-        area.push_task(Task::new("recoger el ordenador", area.get_id()));
-        area.push_task(Task::new("lavarme los dientes", area.get_id()));
-        area.push_task(Task::new("mirar la nómina", area.get_id()));
-        area.get_tasks()[1].set_done(true);
+        area.tasks.push(Task::new("hacer la maleta", area.id()));
+        area.tasks
+            .push(Task::new("recoger el ordenador", area.id()));
+        area.tasks.push(Task::new("lavarme los dientes", area.id()));
+        area.tasks.push(Task::new("mirar la nómina", area.id()));
+        area.tasks[1].set_done(true);
 
         App {
             status: AppStatus::Running,
@@ -126,7 +127,7 @@ impl App {
 
     fn get_area_by_title(&self, title: &str) -> Option<Area> {
         for area in &self.areas {
-            if area.get_title() == title {
+            if area.title == title {
                 return Some(area.clone());
             }
         }

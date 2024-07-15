@@ -84,7 +84,7 @@ fn render_areas(frame: &mut Frame, rect: Rect, app: &mut App) {
 
     let mut areas_items = Vec::<ListItem>::new();
     for area in app.get_areas() {
-        let title = Text::from(Line::from(area.get_title()).bold());
+        let title = Text::from(Line::from(area.title.clone()).bold());
         areas_items.push(ListItem::new(title));
     }
 
@@ -114,8 +114,8 @@ fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
         .block(title_block);
 
     let mut tasks_items = Vec::<ListItem>::new();
-    if let Some(mut area) = app.get_current_area() {
-        for task in area.get_tasks() {
+    if let Some(area) = app.get_current_area() {
+        for task in area.tasks {
             let check = if task.is_done() { "󰱒" } else { "󰄱" };
             tasks_items.push(ListItem::new(format!("{} {}", check, task.get_title())));
         }
