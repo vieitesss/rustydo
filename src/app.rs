@@ -25,13 +25,13 @@ pub enum WindowPane {
 }
 
 pub struct App {
-    status: AppStatus,
-    window: AppWindow,
-    pane: WindowPane,
-    prev_pane: Option<WindowPane>,
-    areas: Vec<Area>,
-    current_area: Option<String>,
-    input: Input,
+    pub status: AppStatus,
+    pub window: AppWindow,
+    pub pane: WindowPane,
+    pub prev_pane: Option<WindowPane>,
+    pub areas: Vec<Area>,
+    pub current_area: u16,
+    pub input: Input,
     // cursor_offset: u16,
 }
 
@@ -41,7 +41,8 @@ impl Default for App {
         area.tasks.push(Task::new("hacer la maleta", *area.id()));
         area.tasks
             .push(Task::new("recoger el ordenador", *area.id()));
-        area.tasks.push(Task::new("lavarme los dientes", *area.id()));
+        area.tasks
+            .push(Task::new("lavarme los dientes", *area.id()));
         area.tasks.push(Task::new("mirar la nómina", *area.id()));
         area.tasks[1].done = true;
 
@@ -51,7 +52,7 @@ impl Default for App {
             pane: WindowPane::Tasks,
             prev_pane: None,
             areas: vec![area],
-            current_area: Some("Universidad".to_string()),
+            current_area: 0,
             input: Input::new(),
             // cursor_offset: 0,
         }
@@ -67,40 +68,15 @@ impl App {
         self.status == AppStatus::Running
     }
 
-    pub fn get_window(&self) -> AppWindow {
-        self.window.clone()
-    }
-
-    pub fn set_window(&mut self, window: AppWindow) {
-        self.window = window;
-    }
-
-    pub fn get_pane(&self) -> WindowPane {
-        self.pane.clone()
-    }
-
-    pub fn set_pane(&mut self, pane: WindowPane) {
-        self.pane = pane;
-    }
-
-    pub fn get_prev_pane(&self) -> Option<WindowPane> {
-        self.prev_pane.clone()
-    }
-
     pub fn save_current_pane(&mut self) {
-        self.prev_pane = Some(self.get_pane());
+        self.prev_pane = Some(self.pane.clone());
     }
 
-    pub fn get_status(&self) -> AppStatus {
-        self.status.clone()
-    }
-
-    pub fn set_status(&mut self, status: AppStatus) {
-        self.status = status;
-    }
-
-    pub fn get_input(&mut self) -> &mut Input {
-        &mut self.input
+    pub fn set_prev_pane(&mut self) {
+        match &self.prev_pane {
+            Some(pane) => self.pane = pane.clone(),
+            None => panic!("There should be a pane!"),
+        }
     }
 
     pub fn handle_input_text(&mut self) {
@@ -114,31 +90,10 @@ impl App {
         }
     }
 
-    pub fn get_areas(&self) -> &[Area] {
-        &self.areas
-    }
-
-    pub fn get_current_area(&self) -> Option<Area> {
-        match &self.current_area {
-            Some(area) => self.get_area_by_title(&area),
-            None => None,
-        }
-    }
-
-    fn get_area_by_title(&self, title: &str) -> Option<Area> {
-        for area in &self.areas {
-            if area.title == title {
-                return Some(area.clone());
-            }
-        }
-
-        None
-    }
-
     pub fn focus_next(&mut self) {
-        match self.get_pane() {
-            WindowPane::Areas => self.set_pane(WindowPane::Tasks),
-            WindowPane::Tasks => self.set_pane(WindowPane::Areas),
+        match self.pane {
+            WindowPane::Areas => self.pane = WindowPane::Tasks,
+            WindowPane::Tasks => self.pane = WindowPane::Areas,
             _ => {}
         }
     }

@@ -11,7 +11,7 @@ use ratatui::{
 };
 
 pub fn render(frame: &mut Frame, app: &mut App) {
-    match app.get_window() {
+    match app.window {
         AppWindow::Main => render_main(frame, app),
     }
 }
@@ -30,8 +30,7 @@ fn render_main(frame: &mut Frame, app: &mut App) {
     let mut areas_block = Block::default().title("Areas").borders(Borders::ALL);
     let mut tasks_block = Block::default().title("Tasks").borders(Borders::ALL);
 
-    let current_pane = app.get_pane();
-    match current_pane {
+    match &app.pane {
         WindowPane::Areas => {
             areas_block = areas_block
                 .clone()
@@ -52,22 +51,22 @@ fn render_main(frame: &mut Frame, app: &mut App) {
     render_areas(frame, areas_tasks[0], app);
     render_tasks(frame, areas_tasks[1], app);
 
-    if current_pane == WindowPane::Input {
+    if app.pane == WindowPane::Input {
         render_input(frame, app);
     }
 }
 
 fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
     let mut help_text = String::new();
-    if app.get_pane() == WindowPane::Input {
+    if app.pane == WindowPane::Input {
         help_text += "exit [esc]  accept [enter]";
     } else {
         help_text += "help [?]  exit [q]  focus next [tab]";
     }
 
-    let help = match app.get_window() {
+    let help = match app.window {
         AppWindow::Main => {
-            match app.get_pane() {
+            match app.pane {
                 WindowPane::Areas => help_text += "  new area [n]",
                 WindowPane::Tasks => help_text += "  new task [n]",
                 WindowPane::Input => {}
@@ -83,7 +82,7 @@ fn render_areas(frame: &mut Frame, rect: Rect, app: &mut App) {
     let inner = Block::bordered().inner(rect);
 
     let mut areas_items = Vec::<ListItem>::new();
-    for area in app.get_areas() {
+    for area in &app.areas {
         let title = Text::from(Line::from(area.title.clone()).bold());
         areas_items.push(ListItem::new(title));
     }
@@ -114,11 +113,9 @@ fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
         .block(title_block);
 
     let mut tasks_items = Vec::<ListItem>::new();
-    if let Some(area) = app.get_current_area() {
-        for task in area.tasks {
-            let check = if task.done { "󰱒" } else { "󰄱" };
-            tasks_items.push(ListItem::new(format!("{} {}", check, task.title)));
-        }
+    for task in &app.areas[app.current_area as usize].tasks {
+        let check = if task.done { "󰱒" } else { "󰄱" };
+        tasks_items.push(ListItem::new(format!("{} {}", check, task.title)));
     }
 
     let tasks_block = Block::new().borders(Borders::NONE);
@@ -156,22 +153,19 @@ fn render_input(frame: &mut Frame, app: &mut App) {
         .border_style(Style::default().fg(Color::Yellow));
 
     let inner_area = input_block.inner(input_area);
-    app.get_input()
+    app.input
         .set_text_bounds(inner_area.left() + 1, inner_area.right());
 
     frame.render_widget(input_block, input_area);
 
     // Set the cursor in the correct position
-    let cursor_pos = min(
-        app.get_input().text_max_len(),
-        app.get_input().text_pos(),
-    );
+    let cursor_pos = min(app.input.text_max_len(), app.input.text_pos());
     frame.set_cursor(inner_area.left() + cursor_pos, inner_area.top());
 
     // Render the text inside the input box
-    let mut input_text: String = app.get_input().text.to_string();
+    let mut input_text: String = app.input.text.to_string();
     let input_text_len = input_text.len();
-    let input_text_max_len = app.get_input().text_max_len() as usize;
+    let input_text_max_len = app.input.text_max_len() as usize;
     if input_text_len >= input_text_max_len {
         input_text = input_text
             .chars()
