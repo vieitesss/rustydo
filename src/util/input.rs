@@ -1,5 +1,5 @@
 pub struct Input {
-    text: String,
+    pub text: String,
     text_bounds: (u16, u16),
     text_pos: u16,
 }
@@ -19,11 +19,7 @@ impl Input {
         Self::default()
     }
 
-    pub fn get_text(&self) -> &str {
-        self.text.as_str()
-    }
-
-    pub fn get_text_pos(&self) -> u16 {
+    pub fn text_pos(&self) -> u16 {
         self.text_pos
     }
 
@@ -39,11 +35,11 @@ impl Input {
         self.text_bounds = (left, right);
     }
 
-    pub fn get_text_bounds(&mut self) -> (u16, u16) {
+    pub fn text_bounds(&mut self) -> (u16, u16) {
         self.text_bounds
     }
 
-    pub fn get_text_max_len(&mut self) -> u16 {
+    pub fn text_max_len(&mut self) -> u16 {
         self.text_bounds.1 - self.text_bounds.0
     }
 

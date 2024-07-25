@@ -6,8 +6,8 @@ use uuid::Uuid;
 pub struct Task {
     id: Uuid,
     area: Uuid,
-    title: String,
-    done: bool,
+    pub title: String,
+    pub done: bool,
 }
 
 impl Task {
@@ -20,23 +20,11 @@ impl Task {
         }
     }
 
-    pub fn is_done(&self) -> bool {
-        self.done
+    pub fn id(&self) -> &Uuid {
+        &self.id
     }
 
-    pub fn set_done(&mut self, done: bool) {
-        self.done = done;
-    }
-
-    pub fn set_title(&mut self, title: String) {
-        self.title = title;
-    }
-
-    pub fn get_title(&self) -> &str {
-        self.title.as_str()
-    }
-
-    pub fn get_area(&self) -> Uuid {
-        self.area.clone()
+    pub fn area(&self) -> &Uuid {
+        &self.area
     }
 }

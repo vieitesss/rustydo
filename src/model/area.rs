@@ -5,8 +5,8 @@ use super::task::Task;
 #[derive(Clone)]
 pub struct Area {
     id: Uuid,
-    title: String,
-    tasks: Vec<Task>,
+    pub title: String,
+    pub tasks: Vec<Task>,
 }
 
 impl Area {
@@ -18,25 +18,9 @@ impl Area {
         }
     }
 
-    pub fn get_id(&self) -> Uuid {
-        self.id
-    }
-
-    pub fn get_title(&self) -> &str {
-        self.title.as_str()
-    }
-
-    pub fn set_title(&mut self, title: String) {
-        self.title = title;
+    pub fn id(&self) -> &Uuid {
+        &self.id
     }
 
     //TODO: update, delete tasks
-
-    pub fn push_task(&mut self, task: Task) {
-        self.tasks.push(task);
-    }
-
-    pub fn get_tasks(&mut self) -> &mut [Task] {
-        &mut self.tasks
-    }
 }

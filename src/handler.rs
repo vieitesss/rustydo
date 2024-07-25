@@ -24,14 +24,14 @@ pub fn event(app: &mut App) -> Result<()> {
 fn key_press(key: KeyCode, app: &mut App) {
     match key {
         KeyCode::Backspace => {
-            if app.get_pane() == WindowPane::Input {
-                app.get_input().remove_char();
+            if app.pane == WindowPane::Input {
+                app.input.remove_char();
             }
         }
         KeyCode::Enter => {
-            if app.get_pane() == WindowPane::Input {
+            if app.pane == WindowPane::Input {
                 app.handle_input_text();
-                app.set_pane(app.get_prev_pane().unwrap());
+                app.set_prev_pane();
             }
         }
         KeyCode::Left => {}
@@ -48,26 +48,26 @@ fn key_press(key: KeyCode, app: &mut App) {
         KeyCode::Insert => {}
         KeyCode::F(_) => {}
         KeyCode::Char(char) => {
-            if app.get_pane() != WindowPane::Input {
+            if app.pane != WindowPane::Input {
                 match char {
-                    'q' => app.set_status(AppStatus::Quitting),
+                    'q' => app.status = AppStatus::Quitting,
                     'n' => {
                         app.save_current_pane();
-                        app.set_pane(WindowPane::Input);
+                        app.pane = WindowPane::Input;
                     }
                     _ => {}
                 }
             } else {
-                app.get_input().insert_char(char);
+                app.input.insert_char(char);
             }
         }
         KeyCode::Null => {}
         KeyCode::Esc => {
-            if app.get_pane() == WindowPane::Input {
-                match app.get_window() {
+            if app.pane == WindowPane::Input {
+                match app.window {
                     AppWindow::Main => {
-                        app.get_input().clear();
-                        app.set_pane(app.get_prev_pane().unwrap());
+                        app.input.clear();
+                        app.set_prev_pane();
                     }
                 }
             }
