@@ -2,17 +2,15 @@
 
 This is a terminal based TODO list made with Rust, using the [ratatui](https://ratatui.rs/) crate.
 
-## Developing process
+![the app so far](./assets/app.png)
 
-Just making the UI to render a basic view of a list of tasks.
+## How to use
 
-Lately, I'm planing to make a database saving all the information. I'm thinking about Redis, but I don't know yet.
-
-## Prerequisites
+### Prerequisites
 
 You just need [Docker](https://www.docker.com/) installed on your local machine to run this application.
 
-## Try it
+### Try it
 
 Once you have Docker installed, run the following command in the root directory of the project:
 ```shell
@@ -21,3 +19,13 @@ make
 Yes, as simple as that, and Docker will do everything for you.
 
 Check out the `Makefile` and the `Dockerfile` to see what is going on during the building process of the application.
+
+## TODO
+
+- Component Architecture:
+    - `input.rs` into `ui` folder. Make it implement `Widget`.
+    - Create `components` folder and add `area`, `task` and `help` components.
+- Functionality:
+    - Create new tasks for the current Area.
+    - Delete, modify, check tasks.
+- More...
