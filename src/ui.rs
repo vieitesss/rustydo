@@ -67,7 +67,7 @@ fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
     let help = match app.window {
         AppWindow::Main => {
             match app.pane {
-                WindowPane::Areas => help_text += "  new area [n]",
+                WindowPane::Areas => help_text += "  new area [n]  / [j/k]  select [enter]",
                 WindowPane::Tasks => help_text += "  new task [n]",
                 WindowPane::Input => {}
             }
@@ -82,8 +82,14 @@ fn render_areas(frame: &mut Frame, rect: Rect, app: &mut App) {
     let inner = Block::bordered().inner(rect);
 
     let mut areas_items = Vec::<ListItem>::new();
-    for area in &app.areas {
-        let title = Text::from(Line::from(area.title.clone()).bold());
+    for (index, area) in app.areas.iter().enumerate() {
+        let mut title = Text::from(Line::from(format!("  {}", area.title.clone())).bold());
+        if index == app.selected_area {
+            title = Text::from(Line::from(format!("> {}", area.title.clone()).bold()));
+        }
+        if index == app.current_area {
+            title = title.clone().yellow()
+        }
         areas_items.push(ListItem::new(title));
     }
 
@@ -106,7 +112,7 @@ fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
     // Centered, without borders, padding-top 1 and a fixed height of 3
     // It is going to be centered vertically and horizontally
     let title_block = Block::new().borders(Borders::NONE).padding(Padding::top(1));
-    let title = Paragraph::new("Universidad")
+    let title = Paragraph::new(app.areas[app.current_area].title.clone())
         .bold()
         .centered()
         .wrap(Wrap { trim: true })
