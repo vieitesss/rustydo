@@ -1,6 +1,9 @@
 #![allow(unreachable_patterns)]
 
-use crate::{model::{area::Area, task::Task}, util::input::Input};
+use crate::{
+    components::input::Input,
+    model::{area::Area, task::Task},
+};
 
 #[derive(PartialEq, Clone)]
 pub enum AppStatus {
@@ -14,8 +17,8 @@ pub enum AppWindow {
     Main,
 }
 
-#[derive(PartialEq, Clone)]
-pub enum WindowPane {
+#[derive(PartialEq, Clone, Debug)]
+pub enum Focus {
     Areas,
     Tasks,
     Input,
@@ -24,8 +27,8 @@ pub enum WindowPane {
 pub struct App {
     pub status: AppStatus,
     pub window: AppWindow,
-    pub pane: WindowPane,
-    pub prev_pane: Option<WindowPane>,
+    pub focus: Focus,
+    pub prev_focus: Option<Focus>,
     pub areas: Vec<Area>,
     /// The area whose tasks are shown
     pub current_area: usize,
@@ -40,7 +43,8 @@ impl Default for App {
         let mut uni = Area::new("Universidad");
         uni.tasks.push(Task::new("hacer la maleta", *uni.id()));
         let mut casa = Area::new("Casa");
-        casa.tasks.push(Task::new("recoger la habitación", *casa.id()));
+        casa.tasks
+            .push(Task::new("recoger la habitación", *casa.id()));
         // area.tasks
         //     .push(Task::new("recoger el ordenador", *area.id()));
         // area.tasks
@@ -51,8 +55,8 @@ impl Default for App {
         App {
             status: AppStatus::Running,
             window: AppWindow::Main,
-            pane: WindowPane::Tasks,
-            prev_pane: None,
+            focus: Focus::Tasks,
+            prev_focus: None,
             areas: vec![uni, casa],
             current_area: 0,
             selected_area: 0,
@@ -72,31 +76,31 @@ impl App {
     }
 
     pub fn save_current_pane(&mut self) {
-        self.prev_pane = Some(self.pane.clone());
+        self.prev_focus = Some(self.focus.clone());
     }
 
     pub fn set_prev_pane(&mut self) {
-        match &self.prev_pane {
-            Some(pane) => self.pane = pane.clone(),
+        match &self.prev_focus {
+            Some(pane) => self.focus = pane.clone(),
             None => panic!("There should be a pane!"),
         }
     }
 
     pub fn handle_input_text(&mut self) {
-        match &self.prev_pane {
+        match &self.prev_focus {
             Some(pane) => match pane {
-                WindowPane::Areas => self.new_area(),
-                WindowPane::Tasks => todo!("New task"),
-                WindowPane::Input => panic!("Input pane should not be a previous pane"),
+                Focus::Areas => self.new_area(),
+                Focus::Tasks => todo!("New task"),
+                Focus::Input => panic!("Input pane should not be a previous pane"),
             },
-            None => panic!("Should be a previous pane"),
+            None => panic!("There should be a previous pane"),
         }
     }
 
     pub fn focus_next(&mut self) {
-        match self.pane {
-            WindowPane::Areas => self.pane = WindowPane::Tasks,
-            WindowPane::Tasks => self.pane = WindowPane::Areas,
+        match self.focus {
+            Focus::Areas => self.focus = Focus::Tasks,
+            Focus::Tasks => self.focus = Focus::Areas,
             _ => {}
         }
     }
