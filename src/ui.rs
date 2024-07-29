@@ -1,12 +1,12 @@
-use std::cmp::min;
-
-use crate::app::{App, AppWindow, WindowPane};
+use crate::{
+    app::{App, AppWindow, Focus},
+    components::Component,
+};
 
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
-    text::{Line, Text},
-    widgets::{Block, Borders, Clear, List, ListItem, Padding, Paragraph, Widget, Wrap},
+    widgets::{Block, Borders, List, ListItem, Padding, Paragraph, Wrap},
     Frame,
 };
 
@@ -30,35 +30,35 @@ fn render_main(frame: &mut Frame, app: &mut App) {
     let mut areas_block = Block::default().title("Areas").borders(Borders::ALL);
     let mut tasks_block = Block::default().title("Tasks").borders(Borders::ALL);
 
-    match &app.pane {
-        WindowPane::Areas => {
+    match &app.focus {
+        Focus::Areas => {
             areas_block = areas_block
                 .clone()
                 .border_style(Style::default().fg(Color::Yellow));
         }
-        WindowPane::Tasks => {
+        Focus::Tasks => {
             tasks_block = tasks_block
                 .clone()
                 .border_style(Style::default().fg(Color::Yellow));
         }
-        WindowPane::Input => {}
+        Focus::Input => {}
     }
 
     frame.render_widget(areas_block, areas_tasks[0]);
     frame.render_widget(tasks_block, areas_tasks[1]);
 
     render_help(frame, main_help[1], app);
-    render_areas(frame, areas_tasks[0], app);
+    app.areas.render(frame, Some(areas_tasks[0]));
     render_tasks(frame, areas_tasks[1], app);
 
-    if app.pane == WindowPane::Input {
-        render_input(frame, app);
+    if app.focus == Focus::Input {
+        app.input.render(frame, None);
     }
 }
 
 fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
     let mut help_text = String::new();
-    if app.pane == WindowPane::Input {
+    if app.focus == Focus::Input {
         help_text += "exit [esc]  accept [enter]";
     } else {
         help_text += "help [?]  exit [q]  focus next [tab]";
@@ -66,37 +66,16 @@ fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
 
     let help = match app.window {
         AppWindow::Main => {
-            match app.pane {
-                WindowPane::Areas => help_text += "  new area [n]  / [j/k]  select [enter]",
-                WindowPane::Tasks => help_text += "  new task [n]",
-                WindowPane::Input => {}
+            match app.focus {
+                Focus::Areas => help_text += "  new area [n]  / [j/k]  select [enter]",
+                Focus::Tasks => help_text += "  new task [n]",
+                Focus::Input => {}
             }
             Paragraph::new(help_text).block(Block::default().borders(Borders::NONE))
         }
     };
 
     frame.render_widget(help, rect);
-}
-
-fn render_areas(frame: &mut Frame, rect: Rect, app: &mut App) {
-    let inner = Block::bordered().inner(rect);
-
-    let mut areas_items = Vec::<ListItem>::new();
-    for (index, area) in app.areas.iter().enumerate() {
-        let mut title = Text::from(Line::from(format!("  {}", area.title.clone())).bold());
-        if index == app.selected_area {
-            title = Text::from(Line::from(format!("> {}", area.title.clone()).bold()));
-        }
-        if index == app.current_area {
-            title = title.clone().yellow()
-        }
-        areas_items.push(ListItem::new(title));
-    }
-
-    let areas_block = Block::new().borders(Borders::NONE);
-    let areas = List::new(areas_items).block(areas_block);
-
-    frame.render_widget(areas, inner);
 }
 
 fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
@@ -112,14 +91,14 @@ fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
     // Centered, without borders, padding-top 1 and a fixed height of 3
     // It is going to be centered vertically and horizontally
     let title_block = Block::new().borders(Borders::NONE).padding(Padding::top(1));
-    let title = Paragraph::new(app.areas[app.current_area].title.clone())
+    let title = Paragraph::new(app.areas.list[app.areas.current_area].title.clone())
         .bold()
         .centered()
         .wrap(Wrap { trim: true })
         .block(title_block);
 
     let mut tasks_items = Vec::<ListItem>::new();
-    for task in &app.areas[app.current_area as usize].tasks {
+    for task in &app.areas.list[app.areas.current_area].tasks {
         let check = if task.done { "󰱒" } else { "󰄱" };
         tasks_items.push(ListItem::new(format!("{} {}", check, task.title)));
     }
@@ -129,57 +108,4 @@ fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
 
     frame.render_widget(title, tasks_chunks[0]);
     frame.render_widget(tasks, tasks_chunks[1]);
-}
-
-fn render_input(frame: &mut Frame, app: &mut App) {
-    let frame_height = frame.size().height;
-    let [_, input_vert, _] = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(vec![
-            Constraint::Length(frame_height / 2 - 3),
-            Constraint::Length(3),
-            Constraint::Length(frame_height / 2 - 3),
-        ])
-        .areas(frame.size());
-
-    let [_, input_area, _] = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints(vec![
-            Constraint::Min(1),
-            Constraint::Max(40),
-            Constraint::Min(1),
-        ])
-        .areas(input_vert);
-
-    Clear.render(input_area, frame.buffer_mut());
-
-    let input_block = Block::default()
-        .title("Input")
-        .borders(Borders::ALL)
-        .border_style(Style::default().fg(Color::Yellow));
-
-    let inner_area = input_block.inner(input_area);
-    app.input
-        .set_text_bounds(inner_area.left() + 1, inner_area.right());
-
-    frame.render_widget(input_block, input_area);
-
-    // Set the cursor in the correct position
-    let cursor_pos = min(app.input.text_max_len(), app.input.text_pos());
-    frame.set_cursor(inner_area.left() + cursor_pos, inner_area.top());
-
-    // Render the text inside the input box
-    let mut input_text: String = app.input.text.to_string();
-    let input_text_len = input_text.len();
-    let input_text_max_len = app.input.text_max_len() as usize;
-    if input_text_len >= input_text_max_len {
-        input_text = input_text
-            .chars()
-            .skip(input_text_len - input_text_max_len)
-            .take(input_text_max_len)
-            .collect();
-    };
-    let text = Paragraph::new(input_text);
-
-    frame.render_widget(text, inner_area);
 }

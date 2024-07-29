@@ -42,7 +42,11 @@ fn main() -> Result<()> {
 
     while app.is_running() {
         terminal.draw(|frame| ui::render(frame, &mut app))?;
-        handler::event(&mut app)?;
+        let mut action = handler::event(&mut app)?;
+
+        while action.is_some() {
+            action = handler::update(&mut app, action.unwrap())?;
+        }
     }
 
     quit()?;
