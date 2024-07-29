@@ -1,7 +1,7 @@
 use std::cmp::min;
 
 use ratatui::{
-    layout::{Constraint, Direction, Layout},
+    layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
     widgets::{Block, Borders, Clear, Paragraph, Widget},
     Frame,
@@ -26,7 +26,7 @@ impl Default for Input {
 }
 
 impl Component for Input {
-    fn render(&mut self, frame: &mut Frame) {
+    fn render(&mut self, frame: &mut Frame, _rect: Option<Rect>) {
         let frame_height = frame.size().height;
         let [_, input_vert, _] = Layout::default()
             .direction(Direction::Vertical)
@@ -77,10 +77,6 @@ impl Component for Input {
 }
 
 impl Input {
-    pub fn new() -> Input {
-        Self::default()
-    }
-
     pub fn text_pos(&self) -> u16 {
         self.text_pos
     }

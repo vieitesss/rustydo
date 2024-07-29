@@ -13,9 +13,9 @@ pub enum Action {
     NextItem,
     PrevItem,
     /// Show the tasks of the selected area
-    NewArea,
+    NewArea(String),
     SelectArea,
-    NewTask,
+    NewTask(String),
     CheckTask,
     ShowInput,
     AcceptInput,
@@ -90,27 +90,26 @@ pub fn update(app: &mut App, action: Action) -> Result<Option<Action>> {
     match (&app.focus, action.clone()) {
         (Focus::Areas, Action::Quit) => app.status = AppStatus::Quitting,
         (Focus::Areas, Action::ChangeFocus) => app.focus = Focus::Tasks,
-        (Focus::Areas, Action::NextItem) => app.next_area(),
-        (Focus::Areas, Action::PrevItem) => app.prev_area(),
-        (Focus::Areas, Action::NewArea) => app.new_area(),
-        (Focus::Areas, Action::SelectArea) => app.update_current_area(),
-        (Focus::Areas, Action::ShowInput) => {
-            app.save_current_pane();
-            app.focus = Focus::Input;
-        }
+        (Focus::Areas, Action::NextItem) => app.areas.next_area(),
+        (Focus::Areas, Action::PrevItem) => app.areas.prev_area(),
+        (Focus::Areas, Action::SelectArea) => app.areas.update_current_area(),
+        (Focus::Areas, Action::ShowInput) => app.focus_input(),
         (Focus::Tasks, Action::Quit) => app.status = AppStatus::Quitting,
         (Focus::Tasks, Action::ChangeFocus) => app.focus = Focus::Areas,
         (Focus::Tasks, Action::NextItem) => todo!("Cannot make action NextItem in Tasks"),
         (Focus::Tasks, Action::PrevItem) => todo!("Cannot make action PrevItem in Tasks"),
-        (Focus::Tasks, Action::NewTask) => todo!("Cannot make action NewTask in Tasks"),
         (Focus::Tasks, Action::CheckTask) => todo!("Cannot make action CheckTask in Tasks"),
-        (Focus::Tasks, Action::ShowInput) => {
-            app.save_current_pane();
-            app.focus = Focus::Input;
-        }
+        (Focus::Tasks, Action::ShowInput) => app.focus_input(),
         (Focus::Input, Action::AcceptInput) => {
-            app.handle_input_text();
-            app.set_prev_pane();
+            if let Some(focus) = &app.prev_focus {
+                if *focus == Focus::Areas {
+                    return Ok(Some(Action::NewArea(app.input.text.trim().to_string())));
+                } else if *focus == Focus::Tasks {
+                    return Ok(Some(Action::NewTask(app.input.text.trim().to_string())));
+                }
+            } else {
+                panic!("There should be an app.prevfocus")
+            }
         }
         (Focus::Input, Action::EscInput) => {
             app.input.clear();
@@ -118,6 +117,15 @@ pub fn update(app: &mut App, action: Action) -> Result<Option<Action>> {
         }
         (Focus::Input, Action::AddChar(c)) => app.input.insert_char(c),
         (Focus::Input, Action::RmChar) => app.input.remove_char(),
+        (Focus::Input, Action::NewArea(name)) => {
+            app.areas.new_area(&name);
+            return Ok(Some(Action::ChangeFocus));
+        }
+        (Focus::Input, Action::NewTask(desc)) => todo!("Cannot make action NewTask({}) in Input", desc),
+        (Focus::Input, Action::ChangeFocus) => {
+            app.input.clear();
+            app.set_prev_pane();
+        }
         _ => panic!("Cannot make {:?} in {:?}", action, app.focus),
     }
 
