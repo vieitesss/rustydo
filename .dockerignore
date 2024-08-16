@@ -1,0 +1,8 @@
+Dockerfile
+Dockerfile.dev
+compose-dev.yaml
+.gitignore
+.git/
+LICENSE
+Makefile
+README.md

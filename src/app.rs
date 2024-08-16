@@ -1,4 +1,7 @@
-use crate::components::{areas::Areas, input::Input};
+use crate::{
+    components::{areas::Areas, input::Input},
+    model::{area::Area, task::Task},
+};
 
 #[derive(PartialEq, Clone)]
 pub enum AppStatus {
@@ -29,6 +32,17 @@ pub struct App {
 
 impl Default for App {
     fn default() -> Self {
+        let mut uni = Area::new("Universidades");
+        uni.tasks.push(Task::new("hacer la maleta", *uni.id()));
+        let mut casa = Area::new("Casa");
+        casa.tasks
+            .push(Task::new("recoger la habitación", *casa.id()));
+        // area.tasks
+        //     .push(Task::new("recoger el ordenador", *area.id()));
+        // area.tasks
+        //     .push(Task::new("lavarme los dientes", *area.id()));
+        // area.tasks.push(Task::new("mirar la nómina", *area.id()));
+        // area.tasks[1].done = true;
         App {
             status: AppStatus::Running,
             window: AppWindow::Main,

@@ -2,7 +2,8 @@ use ratatui::{
     layout::Rect,
     style::Stylize,
     text::{Line, Text},
-    widgets::{Block, Borders, List, ListItem}, Frame,
+    widgets::{Block, Borders, List, ListItem},
+    Frame,
 };
 
 use crate::model::{area::Area, task::Task};

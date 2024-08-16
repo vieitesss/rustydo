@@ -121,7 +121,9 @@ pub fn update(app: &mut App, action: Action) -> Result<Option<Action>> {
             app.areas.new_area(&name);
             return Ok(Some(Action::ChangeFocus));
         }
-        (Focus::Input, Action::NewTask(desc)) => todo!("Cannot make action NewTask({}) in Input", desc),
+        (Focus::Input, Action::NewTask(desc)) => {
+            todo!("Cannot make action NewTask({}) in Input", desc)
+        }
         (Focus::Input, Action::ChangeFocus) => {
             app.input.clear();
             app.set_prev_pane();

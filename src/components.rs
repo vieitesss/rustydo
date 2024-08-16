@@ -1,7 +1,7 @@
 use ratatui::{layout::Rect, Frame};
 
-pub mod input;
 pub mod areas;
+pub mod input;
 pub mod tasks;
 
 pub trait Component {
