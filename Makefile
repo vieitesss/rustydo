@@ -1,7 +1,7 @@
 # The Docker image that will be created after building
 IMAGE = rustydo
 # The source files of the project
-SOURCES = $(wildcard src/*.rs src/bin/*.rs)
+SOURCES = $(wildcard src/*.rs src/**/*.rs src/bin/*.rs)
 # Hidden file needed in order to redo the building process only if the source
 # files have been changed
 TIMESTAMP = .last_build
