@@ -1,8 +1,10 @@
-use crate::app::{App, AppStatus, Focus};
+use crate::{
+    app::{App, AppStatus, Focus},
+    frames::Component,
+};
 use core::panic;
-use std::io::Result;
-
 use ratatui::crossterm::event::{self, Event, KeyCode};
+use std::io::Result;
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum Action {
@@ -14,7 +16,6 @@ pub enum Action {
     PrevItem,
     /// Show the tasks of the selected area
     NewArea(String),
-    SelectArea,
     NewTask(String),
     CheckTask,
     ShowInput,
@@ -23,6 +24,8 @@ pub enum Action {
     /// When writing in the input
     AddChar(char),
     RmChar,
+    /// No action
+    None,
 }
 
 pub fn event(app: &mut App) -> Result<Option<Action>> {
@@ -50,7 +53,7 @@ fn handle_key(key: KeyCode, app: &mut App) -> Option<Action> {
             }
         }
         KeyCode::Enter => match app.focus {
-            Focus::Areas => return Some(Action::SelectArea),
+            Focus::Areas => (),
             Focus::Tasks => (),
             Focus::Input => return Some(Action::AcceptInput),
         },
@@ -87,19 +90,39 @@ fn handle_key(key: KeyCode, app: &mut App) -> Option<Action> {
 
 pub fn update(app: &mut App, action: Action) -> Result<Option<Action>> {
     // TODO: make an Area and a Task Component
+    match action {
+        Action::Quit => {
+            app.status = AppStatus::Quitting;
+            return Ok(None);
+        }
+        Action::ChangeFocus => {
+            app.focus = match app.focus {
+                Focus::Areas => Focus::Tasks,
+                Focus::Tasks => Focus::Areas,
+                Focus::Input => {
+                    app.input.clear();
+
+                    // Sets the focus to the previous pane
+                    app.prev_focus.clone().unwrap()
+                }
+            };
+            return Ok(None);
+        }
+        Action::ShowInput => {
+            // Saves the current focus
+            app.prev_focus = Some(app.focus.clone());
+
+            app.focus = Focus::Input;
+            return Ok(None);
+        }
+        _ => (),
+    }
+
     match (&app.focus, action.clone()) {
-        (Focus::Areas, Action::Quit) => app.status = AppStatus::Quitting,
-        (Focus::Areas, Action::ChangeFocus) => app.focus = Focus::Tasks,
-        (Focus::Areas, Action::NextItem) => app.areas.next_area(),
-        (Focus::Areas, Action::PrevItem) => app.areas.prev_area(),
-        (Focus::Areas, Action::SelectArea) => app.areas.update_current_area(),
-        (Focus::Areas, Action::ShowInput) => app.focus_input(),
-        (Focus::Tasks, Action::Quit) => app.status = AppStatus::Quitting,
-        (Focus::Tasks, Action::ChangeFocus) => app.focus = Focus::Areas,
+        (Focus::Areas, _) => return Ok(app.areas.handle_action(action)),
         (Focus::Tasks, Action::NextItem) => todo!("Cannot make action NextItem in Tasks"),
         (Focus::Tasks, Action::PrevItem) => todo!("Cannot make action PrevItem in Tasks"),
         (Focus::Tasks, Action::CheckTask) => todo!("Cannot make action CheckTask in Tasks"),
-        (Focus::Tasks, Action::ShowInput) => app.focus_input(),
         (Focus::Input, Action::AcceptInput) => {
             if let Some(focus) = &app.prev_focus {
                 if *focus == Focus::Areas {
@@ -113,7 +136,8 @@ pub fn update(app: &mut App, action: Action) -> Result<Option<Action>> {
         }
         (Focus::Input, Action::EscInput) => {
             app.input.clear();
-            app.set_prev_pane();
+            // Sets the focus to the previous pane
+            app.focus = app.prev_focus.clone().unwrap();
         }
         (Focus::Input, Action::AddChar(c)) => app.input.insert_char(c),
         (Focus::Input, Action::RmChar) => app.input.remove_char(),
@@ -123,10 +147,6 @@ pub fn update(app: &mut App, action: Action) -> Result<Option<Action>> {
         }
         (Focus::Input, Action::NewTask(desc)) => {
             todo!("Cannot make action NewTask({}) in Input", desc)
-        }
-        (Focus::Input, Action::ChangeFocus) => {
-            app.input.clear();
-            app.set_prev_pane();
         }
         _ => panic!("Cannot make {:?} in {:?}", action, app.focus),
     }

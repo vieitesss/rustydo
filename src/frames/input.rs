@@ -1,13 +1,12 @@
-use std::cmp::min;
-
+use super::Component;
+use crate::handler::Action;
 use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
     widgets::{Block, Borders, Clear, Paragraph, Widget},
     Frame,
 };
-
-use super::Component;
+use std::cmp::min;
 
 pub struct Input {
     pub text: String,
@@ -54,12 +53,12 @@ impl Component for Input {
             .border_style(Style::default().fg(Color::Yellow));
 
         let inner_area = input_block.inner(input_area);
-        self.set_text_bounds(inner_area.left() + 1, inner_area.right());
+        self.text_bounds = (inner_area.left() + 1, inner_area.right());
 
         frame.render_widget(input_block, input_area);
 
         // Set the cursor in the correct position
-        let cursor_pos = min(self.text_max_len(), self.text_pos());
+        let cursor_pos = min(self.text_max_len(), self.text_pos);
         frame.set_cursor(inner_area.left() + cursor_pos, inner_area.top());
 
         // Render the text inside the input box
@@ -74,27 +73,19 @@ impl Component for Input {
 
         frame.render_widget(paragraph, inner_area)
     }
+
+    fn handle_action(&mut self, _action: Action) -> Option<Action> {
+        return Some(Action::None);
+    }
 }
 
 impl Input {
-    pub fn text_pos(&self) -> u16 {
-        self.text_pos
-    }
-
     pub fn increase_text_pos(&mut self) {
         self.text_pos += 1;
     }
 
     pub fn decrease_text_pos(&mut self) {
         self.text_pos -= 1;
-    }
-
-    pub fn set_text_bounds(&mut self, left: u16, right: u16) {
-        self.text_bounds = (left, right);
-    }
-
-    pub fn text_bounds(&mut self) -> (u16, u16) {
-        self.text_bounds
     }
 
     pub fn text_max_len(&mut self) -> u16 {
@@ -112,8 +103,6 @@ impl Input {
     }
 
     pub fn remove_char(&mut self) {
-        let text_len = self.text.len();
-
         if self.text_pos > 0 {
             self.decrease_text_pos();
         }
@@ -123,7 +112,7 @@ impl Input {
         let rhs: String = chars
             .clone()
             .skip(self.text_pos as usize + 1)
-            .take(text_len - self.text_pos as usize)
+            .take(self.text.len() - self.text_pos as usize)
             .collect();
 
         self.text = String::from(format!("{}{}", lhs, rhs));

@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Task {
     id: Uuid,
     area: Uuid,

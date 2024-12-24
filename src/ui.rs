@@ -1,6 +1,6 @@
 use crate::{
     app::{App, AppWindow, Focus},
-    components::Component,
+    frames::Component,
 };
 
 use ratatui::{
@@ -91,14 +91,18 @@ fn render_tasks(frame: &mut Frame, rect: Rect, app: &mut App) {
     // Centered, without borders, padding-top 1 and a fixed height of 3
     // It is going to be centered vertically and horizontally
     let title_block = Block::new().borders(Borders::NONE).padding(Padding::top(1));
-    let title = Paragraph::new(app.areas.list[app.areas.current_area].title.clone())
-        .bold()
-        .centered()
-        .wrap(Wrap { trim: true })
-        .block(title_block);
+    let title = Paragraph::new(
+        app.areas.list[app.areas.state.selected().expect("A selected area")]
+            .title
+            .clone(),
+    )
+    .bold()
+    .centered()
+    .wrap(Wrap { trim: true })
+    .block(title_block);
 
     let mut tasks_items = Vec::<ListItem>::new();
-    for task in &app.areas.list[app.areas.current_area].tasks {
+    for task in &app.areas.list[app.areas.state.selected().expect("A selected area")].tasks {
         let check = if task.done { "󰱒" } else { "󰄱" };
         tasks_items.push(ListItem::new(format!("{} {}", check, task.title)));
     }

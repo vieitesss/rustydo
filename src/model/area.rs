@@ -1,12 +1,12 @@
+use super::task::Task;
 use uuid::Uuid;
 
-use super::task::Task;
-
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Area {
     id: Uuid,
     pub title: String,
     pub tasks: Vec<Task>,
+    pub selected: bool,
 }
 
 impl Area {
@@ -15,12 +15,11 @@ impl Area {
             id: Uuid::new_v4(),
             title: title.into(),
             tasks: Vec::new(),
+            selected: false,
         }
     }
 
     pub fn id(&self) -> &Uuid {
         &self.id
     }
-
-    //TODO: update, delete tasks
 }

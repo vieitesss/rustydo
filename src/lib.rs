@@ -1,5 +1,5 @@
 pub mod app;
-pub mod components;
+pub mod frames;
 pub mod handler;
 pub mod model;
 pub mod ui;
