@@ -1,6 +1,6 @@
 use crate::{
     app::{App, AppStatus, Focus},
-    frames::Component,
+    frames::FrameTrait,
 };
 use core::panic;
 use ratatui::crossterm::event::{self, Event, KeyCode};
@@ -41,46 +41,40 @@ pub fn event(app: &mut App) -> Result<Option<Action>> {
 }
 
 fn handle_key(key: KeyCode, app: &mut App) -> Option<Action> {
+    match app.focus {
+        Focus::Areas => return app.areas.handle_key(key),
+        Focus::Input => return app.input.handle_key(key),
+        _ => (),
+    }
+
+    // TODO: Handle keys for the tasks component
     match key {
         KeyCode::Tab => {
             if app.focus != Focus::Input {
                 return Some(Action::ChangeFocus);
             }
         }
-        KeyCode::Backspace => {
-            if app.focus == Focus::Input {
-                return Some(Action::RmChar);
-            }
-        }
         KeyCode::Enter => match app.focus {
-            Focus::Areas => (),
             Focus::Tasks => (),
-            Focus::Input => return Some(Action::AcceptInput),
+            _ => panic!("Should not be able to get here"),
         },
         KeyCode::Char(c) => {
-            if app.focus == Focus::Input {
-                return Some(Action::AddChar(c));
-            }
             match c {
                 'q' => return Some(Action::Quit),
                 'n' => return Some(Action::ShowInput),
                 'j' => match app.focus {
-                    Focus::Areas => return Some(Action::NextItem),
-                    Focus::Tasks => (),
-                    _ => (),
+                    Focus::Tasks => (), // TODO: Implement next task
+                    _ => panic!("Should not be able to get here"),
                 },
                 'k' => match app.focus {
-                    Focus::Areas => return Some(Action::PrevItem),
-                    Focus::Tasks => (),
-                    _ => (),
+                    Focus::Tasks => (), // TODO: Implement prev task
+                    _ => panic!("Should not be able to get here"),
                 },
                 _ => (),
             }
         }
         KeyCode::Esc => {
-            if app.focus == Focus::Input {
-                return Some(Action::EscInput);
-            }
+            // TODO: Handle the escape key for the tasks component
         }
         _ => (),
     }
@@ -89,7 +83,7 @@ fn handle_key(key: KeyCode, app: &mut App) -> Option<Action> {
 }
 
 pub fn update(app: &mut App, action: Action) -> Result<Option<Action>> {
-    // TODO: make an Area and a Task Component
+    // Handle window level actions. Not component specific.
     match action {
         Action::Quit => {
             app.status = AppStatus::Quitting;
@@ -99,12 +93,7 @@ pub fn update(app: &mut App, action: Action) -> Result<Option<Action>> {
             app.focus = match app.focus {
                 Focus::Areas => Focus::Tasks,
                 Focus::Tasks => Focus::Areas,
-                Focus::Input => {
-                    app.input.clear();
-
-                    // Sets the focus to the previous pane
-                    app.prev_focus.clone().unwrap()
-                }
+                Focus::Input => app.prev_focus.clone().unwrap(),
             };
             return Ok(None);
         }
@@ -115,41 +104,32 @@ pub fn update(app: &mut App, action: Action) -> Result<Option<Action>> {
             app.focus = Focus::Input;
             return Ok(None);
         }
+        Action::AcceptInput => {
+            // Get the text from the input
+            let text = app.input.text.trim().to_string();
+            app.input.clear();
+
+            // Change focus to the previous focus in order to make the required component handle
+            // the action
+            update(app, Action::ChangeFocus)?;
+
+            return match app.focus {
+                Focus::Areas => Ok(Some(Action::NewArea(text))),
+                Focus::Tasks => Ok(Some(Action::NewTask(text))),
+                _ => panic!("Unexpected focus"),
+            };
+        }
         _ => (),
     }
 
-    match (&app.focus, action.clone()) {
-        (Focus::Areas, _) => return Ok(app.areas.handle_action(action)),
-        (Focus::Tasks, Action::NextItem) => todo!("Cannot make action NextItem in Tasks"),
-        (Focus::Tasks, Action::PrevItem) => todo!("Cannot make action PrevItem in Tasks"),
-        (Focus::Tasks, Action::CheckTask) => todo!("Cannot make action CheckTask in Tasks"),
-        (Focus::Input, Action::AcceptInput) => {
-            if let Some(focus) = &app.prev_focus {
-                if *focus == Focus::Areas {
-                    return Ok(Some(Action::NewArea(app.input.text.trim().to_string())));
-                } else if *focus == Focus::Tasks {
-                    return Ok(Some(Action::NewTask(app.input.text.trim().to_string())));
-                }
-            } else {
-                panic!("There should be an app.prevfocus")
-            }
-        }
-        (Focus::Input, Action::EscInput) => {
-            app.input.clear();
-            // Sets the focus to the previous pane
-            app.focus = app.prev_focus.clone().unwrap();
-        }
-        (Focus::Input, Action::AddChar(c)) => app.input.insert_char(c),
-        (Focus::Input, Action::RmChar) => app.input.remove_char(),
-        (Focus::Input, Action::NewArea(name)) => {
-            app.areas.new_area(&name);
-            return Ok(Some(Action::ChangeFocus));
-        }
-        (Focus::Input, Action::NewTask(desc)) => {
-            todo!("Cannot make action NewTask({}) in Input", desc)
-        }
-        _ => panic!("Cannot make {:?} in {:?}", action, app.focus),
-    }
+    let new_action = match &app.focus {
+        Focus::Areas => app.areas.handle_action(action),
+        //(Focus::Tasks, Action::NextItem) => todo!("Cannot make action NextItem in Tasks"),
+        //(Focus::Tasks, Action::PrevItem) => todo!("Cannot make action PrevItem in Tasks"),
+        //(Focus::Tasks, Action::CheckTask) => todo!("Cannot make action CheckTask in Tasks"),
+        Focus::Input => app.input.handle_action(action),
+        _ => panic!("Unespected focus"),
+    };
 
-    Ok(None)
+    Ok(new_action)
 }

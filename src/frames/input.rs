@@ -1,6 +1,7 @@
-use super::Component;
+use super::FrameTrait;
 use crate::handler::Action;
 use ratatui::{
+    crossterm::event::KeyCode,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style},
     widgets::{Block, Borders, Clear, Paragraph, Widget},
@@ -24,7 +25,7 @@ impl Default for Input {
     }
 }
 
-impl Component for Input {
+impl FrameTrait for Input {
     fn render(&mut self, frame: &mut Frame, _rect: Option<Rect>) {
         let frame_height = frame.size().height;
         let [_, input_vert, _] = Layout::default()
@@ -74,8 +75,36 @@ impl Component for Input {
         frame.render_widget(paragraph, inner_area)
     }
 
-    fn handle_action(&mut self, _action: Action) -> Option<Action> {
-        return Some(Action::None);
+    fn handle_key(&mut self, key: KeyCode) -> Option<Action> {
+        match key {
+            KeyCode::Backspace => Some(Action::RmChar),
+            KeyCode::Enter => Some(Action::AcceptInput),
+            KeyCode::Char(c) => Some(Action::AddChar(c)),
+            KeyCode::Esc => Some(Action::EscInput),
+            _ => None,
+        }
+    }
+
+    fn handle_action(&mut self, action: Action) -> Option<Action> {
+        match action {
+            Action::EscInput => {
+                self.clear();
+
+                Some(Action::ChangeFocus)
+            }
+            Action::AddChar(c) => {
+                self.insert_char(c);
+                None
+            }
+            Action::RmChar => {
+                self.remove_char();
+                None
+            }
+            //Action::NewTask(desc) => {
+            //    todo!("Cannot make action NewTask({}) in Input", desc)
+            //}
+            _ => panic!("Cannot handle action {:?} in Input", action),
+        }
     }
 }
 

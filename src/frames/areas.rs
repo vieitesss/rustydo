@@ -1,9 +1,10 @@
-use super::Component;
+use super::FrameTrait;
 use crate::{
     handler::Action,
     model::{area::Area, task::Task},
 };
 use ratatui::{
+    crossterm::event::KeyCode,
     layout::Rect,
     style::{Color, Style},
     text::{Line, Text},
@@ -42,7 +43,7 @@ impl Default for Areas {
     }
 }
 
-impl Component for Areas {
+impl FrameTrait for Areas {
     fn render(&mut self, frame: &mut Frame, rect: Option<Rect>) {
         assert!(rect.is_some());
 
@@ -59,13 +60,36 @@ impl Component for Areas {
         frame.render_widget(areas, inner);
     }
 
+    fn handle_key(&mut self, key: KeyCode) -> Option<Action> {
+        match key {
+            KeyCode::Tab => Some(Action::ChangeFocus),
+            KeyCode::Char(c) => match c {
+                'q' => Some(Action::Quit),
+                'n' => Some(Action::ShowInput),
+                'j' => Some(Action::NextItem),
+                'k' => Some(Action::PrevItem),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     fn handle_action(&mut self, action: Action) -> Option<Action> {
         match action {
-            Action::NextItem => self.next_area(),
-            Action::PrevItem => self.prev_area(),
-            _ => (),
+            Action::NextItem => {
+                self.next_area();
+                None
+            }
+            Action::PrevItem => {
+                self.prev_area();
+                None
+            }
+            Action::NewArea(name) => {
+                self.new_area(&name);
+                None
+            }
+            _ => panic!("Cannot handle action {:?} in Input", action),
         }
-        return None;
     }
 }
 

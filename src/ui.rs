@@ -1,6 +1,6 @@
 use crate::{
     app::{App, AppWindow, Focus},
-    frames::Component,
+    frames::FrameTrait,
 };
 
 use ratatui::{
@@ -67,7 +67,7 @@ fn render_help(frame: &mut Frame, rect: Rect, app: &mut App) {
     let help = match app.window {
         AppWindow::Main => {
             match app.focus {
-                Focus::Areas => help_text += "  new area [n]  / [j/k]  select [enter]",
+                Focus::Areas => help_text += "  new area [n]  / [j/k]",
                 Focus::Tasks => help_text += "  new task [n]",
                 Focus::Input => {}
             }
